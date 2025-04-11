@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  codebase-intelligence:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ${CODEBASE_PATH:-./}:/codebase
+      - ${STORAGE_DIR:-./storage}:/storage
+    env_file:
+      - .env
+    environment:
+      - CODEBASE_PATH=/codebase
+      - STORAGE_DIR=/storage
+    command: ["php", "/app/bin/code-intelligence"]
+    tty: true
+
+  codebase-updater:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ${CODEBASE_PATH:-./}:/codebase
+      - ${STORAGE_DIR:-./storage}:/storage
+    env_file:
+      - .env
+    environment:
+      - CODEBASE_PATH=/codebase
+      - STORAGE_DIR=/storage
+    command: ["php", "/app/bin/code-intelligence", "update", "--schedule", "daily"]
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ${CODEBASE_PATH:-./}:/codebase
+      - ${STORAGE_DIR:-./storage}:/storage
+    env_file:
+      - .env
+    working_dir: /app
+    command: ["php", "-a"]
+    tty: true
+
+volumes:
+  redis-data:
