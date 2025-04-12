@@ -3,6 +3,7 @@
 .env.local.php
 .env.*.local
 .env.dist
+.env
 *.log
 *.pkl
 
@@ -41,3 +42,4 @@ phpunit.result.cache
 infection/
 ###< Phpunit ###
 adapter_program_response.json
+.composer/

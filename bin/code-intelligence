@@ -86,6 +86,65 @@ $containerBuilder->addDefinitions([
             $c->get(LoggerInterface::class)
         );
     },
+    InitCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new InitCommand(
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    IngestCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new IngestCommand(
+            $c->get(AIModelClientInterface::class),
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    UpdateCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new UpdateCommand(
+            $c->get(AIModelClientInterface::class),
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    AnalyzeCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new AnalyzeCommand(
+            $c->get(AIModelClientInterface::class),
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    BudgetCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new BudgetCommand(
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    ShellCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new ShellCommand(
+            $c->get(AIModelClientInterface::class),
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    MetricsCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new MetricsCommand(
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    CacheClearCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new CacheClearCommand(
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
+    SyncCommand::class => function (\Psr\Container\ContainerInterface $c) {
+        return new SyncCommand(
+            $c->get(AIModelClientInterface::class),
+            $c->get('config'),
+            $c->get(LoggerInterface::class)
+        );
+    },
 ]);
 
 try {
@@ -96,15 +155,14 @@ try {
 
     // Register commands
     $application->add($container->get(InitCommand::class));
-    // Uncomment as you implement each command
-    // $application->add($container->get(IngestCommand::class));
-    // $application->add($container->get(UpdateCommand::class));
-    // $application->add($container->get(AnalyzeCommand::class));
-    // $application->add($container->get(BudgetCommand::class));
-    // $application->add($container->get(ShellCommand::class));
-    // $application->add($container->get(MetricsCommand::class));
-    // $application->add($container->get(CacheClearCommand::class));
-    // $application->add($container->get(SyncCommand::class));
+    $application->add($container->get(IngestCommand::class));
+    $application->add($container->get(UpdateCommand::class));
+    $application->add($container->get(AnalyzeCommand::class));
+    $application->add($container->get(BudgetCommand::class));
+    $application->add($container->get(ShellCommand::class));
+    $application->add($container->get(MetricsCommand::class));
+    $application->add($container->get(CacheClearCommand::class));
+    $application->add($container->get(SyncCommand::class));
 
     // Run application
     $application->run($input);

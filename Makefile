@@ -7,8 +7,8 @@ LANGUAGE ?= php
 DOCKER_COMPOSE = docker compose
 
 # Command aliases
-EXEC = $(DOCKER_COMPOSE) exec codebase-intelligence
 PHP = $(DOCKER_COMPOSE) run --rm php
+EXEC = $(DOCKER_COMPOSE) exec codebase-intelligence
 
 # Help command
 help:
@@ -50,84 +50,95 @@ down:
 	$(DOCKER_COMPOSE) down
 
 sh:
-	$(EXEC) sh
+	$(PHP) sh
 
 # Development commands
 install:
-	composer install
+	$(PHP) composer install
 
 update:
-	composer update
+	$(PHP) composer update
 
 test:
-	composer test
+	$(PHP) composer test
 
 analyze:
-	composer analyze
+	$(PHP) composer analyze
 
-# Claude integration commands
+# Initialization command (must be run before other Claude commands)
 init:
 	@echo "Initializing Claude integration..."
 	@mkdir -p $(STORAGE_DIR)
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence init \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR) \
+		--codebase-path=/codebase \
+		--storage-dir=/storage \
 		--language=$(LANGUAGE)
 
+# Claude integration commands - all run with dependency check
 ingest:
 	@echo "Ingesting codebase into Claude..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence ingest \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR)
+		--codebase-path=/codebase \
+		--storage-dir=/storage
 
 analyze-code:
 	@echo "Analyzing codebase with Claude..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence analyze \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR)
+		--codebase-path=/codebase \
+		--storage-dir=/storage
 
 update-claude:
 	@echo "Updating Claude with recent changes..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence update \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR)
+		--codebase-path=/codebase \
+		--storage-dir=/storage
 
 budget:
 	@echo "Estimating costs for Claude integration..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence budget \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR)
+		--codebase-path=/codebase \
+		--storage-dir=/storage
 
 daily-sync:
 	@echo "Running daily synchronization with Claude..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence sync \
-		--codebase-path=$(CODEBASE_PATH) \
-		--storage-dir=$(STORAGE_DIR) \
+		--codebase-path=/codebase \
+		--storage-dir=/storage \
 		--mode=daily
 
 interactive:
 	@echo "Starting interactive Claude shell..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence shell
 
 metrics:
 	@echo "Generating usage metrics report..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence metrics
 
 # Cleanup commands
 clean:
 	@echo "Cleaning up temporary files..."
-	@rm -rf vendor
-	@rm -rf var/cache/*
+	$(PHP) rm -rf /app/vendor
+	$(PHP) rm -rf /app/var/cache/*
 
 purge: clean
 	@echo "Purging all Claude data..."
-	@rm -rf $(STORAGE_DIR)
+	rm -rf $(STORAGE_DIR)
 
 # Cache management
 clear-cache:
 	@echo "Clearing response cache..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence cache:clear
 
 optimize-cache:
 	@echo "Optimizing cache..."
+	$(PHP) php -r "if (!file_exists('/app/vendor/autoload.php')) { echo \"Installing dependencies first...\n\"; shell_exec('composer install'); }"
 	$(PHP) php bin/code-intelligence cache:optimize

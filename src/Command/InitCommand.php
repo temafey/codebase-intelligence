@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CodebaseIntelligence\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,6 +18,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Initializes the codebase integration with Claude
  */
+#[AsCommand(name: 'init')]
 class InitCommand extends Command
 {
     protected static $defaultName = 'init';
@@ -41,57 +43,50 @@ class InitCommand extends Command
             ->addArgument(
                 'codebase-path',
                 InputArgument::OPTIONAL,
-                'Path to the codebase you want to analyze',
-                getcwd()
+                'Path to the codebase you want to ingest',
+                $this->config['codebase_path'] ?? getcwd()
             )
             ->addOption(
                 'storage-dir',
                 's',
                 InputOption::VALUE_OPTIONAL,
-                'Directory to store Claude session data and analysis results',
-                getcwd() . '/.claude'
+                'Directory for storing session data',
+                $this->config['storage_dir'] ?? getcwd() . '/.claude'
             )
             ->addOption(
-                'language',
-                'l',
+                'max-chunks',
+                'm',
                 InputOption::VALUE_OPTIONAL,
-                'Primary language of the codebase (php, python, golang)',
-                'php'
+                'Maximum number of chunks to send (for budget control)',
+                '0'
+            )
+            ->addOption(
+                'chunk-size',
+                'c',
+                InputOption::VALUE_OPTIONAL,
+                'Maximum size of each chunk in tokens (approximate)',
+                '2000'
             )
             ->addOption(
                 'include',
                 'i',
                 InputOption::VALUE_OPTIONAL,
                 'File patterns to include (comma-separated)',
-                '*.php,*.js,*.html,*.css,*.md'
+                $this->config['codebase_include_patterns'] ?? '*.php,*.js,*.html,*.css,*.md'
             )
             ->addOption(
                 'exclude',
                 'e',
                 InputOption::VALUE_OPTIONAL,
                 'File patterns to exclude (comma-separated)',
-                'vendor/*,node_modules/*,tests/*,storage/*'
+                $this->config['codebase_exclude_patterns'] ?? 'vendor/*,node_modules/*,tests/*,storage/*'
             )
             ->addOption(
-                'team-size',
-                't',
+                'language',
+                'l',
                 InputOption::VALUE_OPTIONAL,
-                'Number of developers in the team',
-                '2'
-            )
-            ->addOption(
-                'api-key',
-                'k',
-                InputOption::VALUE_OPTIONAL,
-                'Claude API key (recommended to use .env file instead)',
-                null
-            )
-            ->addOption(
-                'cache-type',
-                'c',
-                InputOption::VALUE_OPTIONAL,
-                'Cache type (filesystem or redis)',
-                'filesystem'
+                'Primary language of the codebase',
+                $this->config['codebase_language'] ?? 'php'
             );
     }
 

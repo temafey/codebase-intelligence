@@ -7,6 +7,7 @@ RUN apk add --no-cache \
     unzip \
     libzip-dev \
     oniguruma-dev \
+    linux-headers \
     $PHPIZE_DEPS
 
 # Install PHP extensions
@@ -19,8 +20,12 @@ RUN docker-php-ext-install \
 # Install Redis extension
 RUN pecl install redis && docker-php-ext-enable redis
 
-# Install parallel extension for better performance
-RUN pecl install parallel && docker-php-ext-enable parallel
+# Install and configure Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN echo "xdebug.mode=develop,debug,coverage" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.client_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.client_port=9003" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+    && echo "xdebug.start_with_request=yes" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -28,23 +33,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /app
 
-# Copy composer files
-COPY composer.json composer.lock* ./
-
-# Install dependencies without scripts for better caching
-RUN composer install --no-scripts --no-autoloader --no-dev
-
-# Copy remaining application code
-COPY . .
-
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize
-
 # Add directory for application storage
 RUN mkdir -p /storage && chmod 777 /storage
-
-# Make bin file executable
-RUN chmod +x bin/code-intelligence
 
 # Use non-root user for better security
 RUN addgroup -g 1000 claude && \
@@ -52,6 +42,3 @@ RUN addgroup -g 1000 claude && \
     chown -R claude:claude /app /storage
 
 USER claude
-
-ENTRYPOINT ["php", "/app/bin/code-intelligence"]
-CMD ["--help"]

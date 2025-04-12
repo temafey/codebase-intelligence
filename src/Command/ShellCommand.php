@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace CodebaseIntelligence\Command;
 
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -19,9 +21,9 @@ use Psr\Log\LoggerInterface;
 /**
  * Interactive shell for working with Claude
  */
+#[AsCommand(name: 'shell')]
 class ShellCommand extends Command
 {
-    protected static $defaultName = 'shell';
     protected static $defaultDescription = 'Start an interactive shell session with Claude';
 
     private LoggerInterface $logger;
@@ -57,10 +59,10 @@ class ShellCommand extends Command
             )
             ->addOption(
                 'storage-dir',
-                'd',
+                's',
                 InputOption::VALUE_OPTIONAL,
                 'Directory for storing session data',
-                null
+                $this->config['storage_dir'] ?? getcwd() . '/.claude'
             )
             ->addOption(
                 'no-cache',
